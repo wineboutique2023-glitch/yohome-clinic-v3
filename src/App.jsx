@@ -67,7 +67,6 @@ export default function App() {
     setSelectedClient(client);
     setClientForm(client);
     setActiveTab("client");
-
     await fetchIntake(client.id);
     await fetchSoapNotes(client.id);
   }
@@ -195,8 +194,8 @@ export default function App() {
     setSelectedClient(null);
     setClientForm(emptyClient);
     setIntakeForm(emptyIntake);
-    setSoapNotes([]);
     setSoapForm(emptySoap);
+    setSoapNotes([]);
     await fetchClients();
 
     alert("Client deleted.");
@@ -274,6 +273,108 @@ export default function App() {
     await fetchSoapNotes(selectedClient.id);
   }
 
+  function downloadSoapPdf() {
+    if (!selectedClient) {
+      alert("Please select a client first.");
+      return;
+    }
+
+    const clientName = `${selectedClient.first_name || ""} ${
+      selectedClient.last_name || ""
+    }`;
+
+    const win = window.open("", "_blank");
+
+    win.document.write(`
+      <html>
+        <head>
+          <title>YOHOME SOAP Note</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 40px;
+              color: #09223f;
+              line-height: 1.6;
+            }
+            h1 {
+              color: #0f3d5e;
+              margin-bottom: 5px;
+            }
+            h2 {
+              border-bottom: 1px solid #ccc;
+              padding-bottom: 6px;
+              margin-top: 28px;
+            }
+            .info {
+              margin-bottom: 20px;
+              font-size: 14px;
+            }
+            .section {
+              margin-bottom: 18px;
+            }
+            .label {
+              font-weight: bold;
+              color: #0f3d5e;
+            }
+            .box {
+              border: 1px solid #d6e2ee;
+              border-radius: 10px;
+              padding: 12px;
+              min-height: 60px;
+              white-space: pre-wrap;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>YOHOME Massage & Myotherapy</h1>
+          <div class="info">SOAP Treatment Note</div>
+
+          <h2>Client Information</h2>
+          <p><b>Client:</b> ${clientName}</p>
+          <p><b>Phone:</b> ${selectedClient.phone || ""}</p>
+          <p><b>Email:</b> ${selectedClient.email || ""}</p>
+
+          <h2>Treatment Details</h2>
+          <p><b>Treatment Date:</b> ${soapForm.treatment_date || ""}</p>
+          <p><b>Therapist:</b> ${soapForm.therapist_name || ""}</p>
+
+          <h2>SOAP Note</h2>
+
+          <div class="section">
+            <div class="label">S - Subjective</div>
+            <div class="box">${soapForm.subjective || ""}</div>
+          </div>
+
+          <div class="section">
+            <div class="label">O - Objective</div>
+            <div class="box">${soapForm.objective || ""}</div>
+          </div>
+
+          <div class="section">
+            <div class="label">A - Assessment</div>
+            <div class="box">${soapForm.assessment || ""}</div>
+          </div>
+
+          <div class="section">
+            <div class="label">P - Plan</div>
+            <div class="box">${soapForm.plan || ""}</div>
+          </div>
+
+          <div class="section">
+            <div class="label">Therapist Notes</div>
+            <div class="box">${soapForm.therapist_notes || ""}</div>
+          </div>
+
+          <script>
+            window.print();
+          </script>
+        </body>
+      </html>
+    `);
+
+    win.document.close();
+  }
+
   function newClient() {
     setSelectedClient(null);
     setClientForm(emptyClient);
@@ -330,16 +431,14 @@ export default function App() {
 
       <main className="main">
         <div className="header">
-          <div>
-            <h1>
-              {selectedClient
-                ? `${selectedClient.first_name || ""} ${
-                    selectedClient.last_name || ""
-                  }`
-                : "New Client"}
-            </h1>
-            <p>Client registration, intake form and SOAP notes</p>
-          </div>
+          <h1>
+            {selectedClient
+              ? `${selectedClient.first_name || ""} ${
+                  selectedClient.last_name || ""
+                }`
+              : "New Client"}
+          </h1>
+          <p>Client registration, intake form and SOAP notes</p>
         </div>
 
         <div className="tabs">
@@ -571,13 +670,28 @@ export default function App() {
                   onChange={handleSoapChange}
                 />
               </label>
+
+              <label>
+                Therapist Name
+                <select
+                  name="therapist_name"
+                  value={soapForm.therapist_name || ""}
+                  onChange={handleSoapChange}
+                >
+                  <option value="">Select therapist</option>
+                  <option value="Zheng Yi">Zheng Yi</option>
+                  <option value="Tree">Tree</option>
+                  <option value="Nancy">Nancy</option>
+                  <option value="Cedrick">Cedrick</option>
+                </select>
+              </label>
             </div>
 
             <label>
               S - Subjective
               <textarea
                 name="subjective"
-                value={soapForm.subjective}
+                value={soapForm.subjective || ""}
                 onChange={handleSoapChange}
                 placeholder="Client's reported symptoms, concerns, pain level..."
               />
@@ -587,7 +701,7 @@ export default function App() {
               O - Objective
               <textarea
                 name="objective"
-                value={soapForm.objective}
+                value={soapForm.objective || ""}
                 onChange={handleSoapChange}
                 placeholder="Observation, movement, palpation findings..."
               />
@@ -597,7 +711,7 @@ export default function App() {
               A - Assessment
               <textarea
                 name="assessment"
-                value={soapForm.assessment}
+                value={soapForm.assessment || ""}
                 onChange={handleSoapChange}
                 placeholder="Clinical impression within scope..."
               />
@@ -607,7 +721,7 @@ export default function App() {
               P - Plan
               <textarea
                 name="plan"
-                value={soapForm.plan}
+                value={soapForm.plan || ""}
                 onChange={handleSoapChange}
                 placeholder="Treatment provided, home care, next visit plan..."
               />
@@ -617,13 +731,16 @@ export default function App() {
               Therapist Notes
               <textarea
                 name="therapist_notes"
-                value={soapForm.therapist_notes}
+                value={soapForm.therapist_notes || ""}
                 onChange={handleSoapChange}
               />
             </label>
 
             <div className="actions">
               <button onClick={saveSoapNote}>Save SOAP Note</button>
+              <button type="button" onClick={downloadSoapPdf}>
+                Download PDF
+              </button>
             </div>
 
             <h3>Previous SOAP Notes</h3>
@@ -642,14 +759,22 @@ export default function App() {
                   </div>
 
                   <p>
+                    <b>Therapist:</b>{" "}
+                    {note.therapist_name || "Not recorded"}
+                  </p>
+
+                  <p>
                     <b>S:</b> {note.subjective}
                   </p>
+
                   <p>
                     <b>O:</b> {note.objective}
                   </p>
+
                   <p>
                     <b>A:</b> {note.assessment}
                   </p>
+
                   <p>
                     <b>P:</b> {note.plan}
                   </p>
