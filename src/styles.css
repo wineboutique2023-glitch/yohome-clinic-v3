@@ -4,263 +4,238 @@
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Inter, Arial, sans-serif;
   background: #f4f7fb;
-  color: #102033;
-}
-
-button,
-input,
-textarea {
-  font: inherit;
+  color: #09223f;
 }
 
 .app {
+  min-height: 100vh;
   display: grid;
   grid-template-columns: 320px 1fr;
-  min-height: 100vh;
 }
 
 .sidebar {
   background: #ffffff;
-  border-right: 1px solid #d8e2ef;
-  padding: 22px;
+  border-right: 1px solid #dbe5ef;
+  padding: 32px 24px;
 }
 
-.brand {
-  background: #1f6fac;
-  color: white;
-  padding: 22px;
-  border-radius: 20px;
-  margin-bottom: 18px;
-}
-
-.brand h1 {
+.sidebar h2 {
   margin: 0;
-  font-size: 34px;
+  font-size: 32px;
+  letter-spacing: 1px;
 }
 
-.brand p {
-  margin: 8px 0 0;
-  font-size: 20px;
+.sidebar p {
+  margin: 8px 0 26px;
+  color: #64748b;
 }
 
-.primary {
-  background: #1f6fac;
-  color: white;
-  border: 0;
+.search,
+input,
+textarea {
+  width: 100%;
+  border: 1px solid #cbd8e6;
   border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 15px;
+  background: #ffffff;
+  outline: none;
+}
+
+.search:focus,
+input:focus,
+textarea:focus {
+  border-color: #0f3d5e;
+  box-shadow: 0 0 0 3px rgba(15, 61, 94, 0.12);
+}
+
+.newBtn {
+  width: 100%;
+  margin: 18px 0;
   padding: 14px 18px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.full {
-  width: 100%;
-  margin-bottom: 16px;
-}
-
-.search {
-  width: 100%;
-  padding: 14px;
-  border: 1px solid #cfd9e6;
+  border: none;
   border-radius: 14px;
-  margin-bottom: 16px;
+  background: #0f3d5e;
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
 }
 
 .clientList {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.client {
+.clientItem {
+  width: 100%;
   text-align: left;
-  border: 1px solid #d8e2ef;
-  background: white;
+  padding: 16px;
   border-radius: 16px;
-  padding: 18px;
+  border: 1px solid #dbe5ef;
+  background: #f8fbfd;
   cursor: pointer;
 }
 
-.client.active {
-  border-color: #1f6fac;
-  background: #eef6ff;
-}
-
-.client strong,
-.client span {
+.clientItem strong {
   display: block;
+  font-size: 16px;
 }
 
-.client span {
-  color: #5f7085;
-  margin-top: 6px;
+.clientItem span {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.clientItem.active {
+  background: #eaf2f8;
+  border-color: #0f3d5e;
 }
 
 .main {
-  padding: 28px;
+  padding: 44px;
 }
 
-.topCard,
-.card {
-  background: white;
-  border: 1px solid #d8e2ef;
-  border-radius: 22px;
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-.topCard h2 {
+.header h1 {
   margin: 0;
-  font-size: 34px;
+  font-size: 42px;
 }
 
-.topCard p {
-  margin: 8px 0 0;
-  color: #5f7085;
-  font-size: 20px;
+.header p {
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 17px;
 }
 
 .tabs {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  gap: 14px;
+  margin: 28px 0 30px;
 }
 
-.tabs button {
-  border: 1px solid #d8e2ef;
-  background: white;
+.tab {
+  border: 1px solid #d6e2ee;
+  background: #ffffff;
   border-radius: 999px;
-  padding: 12px 20px;
-  font-weight: bold;
+  padding: 14px 30px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.tabs button.on {
-  background: #1f6fac;
+.tab.active {
+  background: #0f3d5e;
   color: white;
-  border-color: #1f6fac;
+  border-color: #0f3d5e;
+}
+
+.card {
+  background: white;
+  border: 1px solid #dbe5ef;
+  border-radius: 28px;
+  padding: 36px;
+  box-shadow: 0 18px 45px rgba(15, 61, 94, 0.08);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 28px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 22px 28px;
 }
 
-.field span {
+label {
   display: block;
-  font-weight: bold;
-  color: #4c5f75;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 13px;
-}
-
-.field input,
-.field textarea {
-  width: 100%;
-  border: 1px solid #cfd9e6;
-  border-radius: 14px;
-  padding: 13px 14px;
-  background: white;
-}
-
-.field textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.span2 {
-  grid-column: span 2;
-}
-
-.historyGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-
-.record {
-  border: 1px solid #d8e2ef;
-  border-radius: 16px;
-  padding: 16px;
-  margin-top: 14px;
-  background: #fbfdff;
-}
-
-.record button {
-  margin-top: 10px;
-  border: 0;
-  background: #102033;
-  color: white;
-  border-radius: 10px;
-  padding: 9px 12px;
-  cursor: pointer;
-}
-
-.printOverlay {
-  position: fixed;
-  inset: 0;
-  background: #eef2f6;
-  z-index: 999;
-  overflow: auto;
-  padding: 24px;
-}
-
-.printActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.printActions button {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #cfd9e6;
-  background: white;
-  cursor: pointer;
-}
-
-.printPage {
-  background: white;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 34px;
-  border-radius: 12px;
-}
-
-.printHeader {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 2px solid #102033;
-  padding-bottom: 18px;
-  margin-bottom: 18px;
-}
-
-.printHeader h1 {
-  margin: 0;
-}
-
-.printInfo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 20px;
+  font-weight: 700;
   margin-bottom: 20px;
 }
 
-.printBlock {
-  border-top: 1px solid #ddd;
-  padding-top: 12px;
-  margin-top: 12px;
+label input,
+label textarea {
+  margin-top: 8px;
+  font-weight: 400;
 }
 
-.printBlock h3 {
-  margin: 0 0 8px;
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkbox input {
+  width: auto;
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.actions button {
+  border: none;
+  border-radius: 14px;
+  padding: 14px 24px;
+  background: #0f3d5e;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.actions .danger,
+.danger,
+.smallDanger {
+  background: #b42318;
+}
+
+.warning {
+  background: #fff4e5;
+  border: 1px solid #ffd8a8;
+  color: #92400e;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.soapHistory {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.soapItem {
+  border: 1px solid #dbe5ef;
+  border-radius: 20px;
+  padding: 20px;
+  background: #f8fbfd;
+}
+
+.soapTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.smallDanger {
+  border: none;
+  color: white;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
 }
 
 @media (max-width: 900px) {
@@ -268,37 +243,20 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .grid,
-  .historyGrid,
-  .printInfo {
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid #dbe5ef;
+  }
+
+  .main {
+    padding: 24px;
+  }
+
+  .grid {
     grid-template-columns: 1fr;
   }
 
-  .span2 {
-    grid-column: span 1;
-  }
-}
-
-@media print {
-  .noPrint,
-  .sidebar,
-  .main {
-    display: none !important;
-  }
-
-  body {
-    background: white;
-  }
-
-  .printOverlay {
-    position: static;
-    padding: 0;
-    background: white;
-  }
-
-  .printPage {
-    box-shadow: none;
-    border-radius: 0;
-    max-width: none;
+  .tabs {
+    flex-wrap: wrap;
   }
 }
