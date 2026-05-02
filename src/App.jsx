@@ -26,6 +26,7 @@ const emptyIntake = {
 
 const emptySoap = {
   treatment_date: "",
+  therapist_name: "",
   subjective: "",
   objective: "",
   assessment: "",
