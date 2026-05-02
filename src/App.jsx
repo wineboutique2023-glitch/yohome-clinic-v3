@@ -1,19 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React from "react";
 
 export default function App() {
-  const [name, setName] = useState("");
-
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 40, fontFamily: "Arial" }}>
       <h1>YOHOME Clinic System</h1>
-
-      <input
-        placeholder="Client name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-
-      <p>Current: {name}</p>
+      <p>Website is running successfully.</p>
     </div>
   );
 }
