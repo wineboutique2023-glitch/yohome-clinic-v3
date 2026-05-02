@@ -1,1 +1,304 @@
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f8fb;color:#18212a}button,input,textarea{font:inherit}button{cursor:pointer}.login{min-height:100vh;display:grid;place-items:center;padding:24px}.loginCard{width:min(460px,100%);background:white;border:1px solid #d6deea;border-radius:20px;padding:28px;box-shadow:0 14px 40px rgba(0,0,0,.08)}.loginCard h1{margin:0 0 8px;color:#2469a8}.loginCard p{color:#5c6978;margin-bottom:22px;line-height:1.5}.layout{min-height:100vh;display:grid;grid-template-columns:320px 1fr}.sidebar{background:white;border-right:1px solid #d6deea;padding:18px;display:flex;flex-direction:column;gap:12px}.brand{background:#2469a8;color:white;border-radius:16px;padding:18px}.brand h1{margin:0;font-size:24px}.brand p{margin:4px 0 0;opacity:.9}.search,.field input,.field textarea{width:100%;border:1px solid #d6deea;border-radius:12px;padding:11px 12px;background:white}.clientList{overflow:auto;display:grid;gap:8px;flex:1;min-height:240px}.clientItem{text-align:left;border:1px solid #d6deea;background:#fbfcfe;border-radius:12px;padding:12px}.clientItem.active{border-color:#2469a8;background:#eef3f9}.clientItem strong{display:block}.clientItem span{display:block;font-size:13px;color:#5c6978;margin-top:4px}.primary,.secondary{border:0;border-radius:12px;padding:12px 14px;font-weight:700}.primary{background:#2469a8;color:white}.secondary{background:#eef3f9;color:#18212a}.fullBtn{width:100%}.main{padding:22px}.top{background:white;border:1px solid #d6deea;border-radius:18px;padding:18px 20px;margin-bottom:14px}.top h2{margin:0 0 4px}.top p{margin:0;color:#5c6978;line-height:1.5}.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.tabs button{border:1px solid #d6deea;background:white;border-radius:999px;padding:10px 14px;font-weight:700}.tabs button.active{background:#2469a8;color:white;border-color:#2469a8}.card{background:white;border:1px solid #d6deea;border-radius:18px;padding:18px;box-shadow:0 10px 28px rgba(0,0,0,.04)}.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:block}.field span{display:block;font-size:12px;text-transform:uppercase;color:#5c6978;font-weight:700;letter-spacing:.4px;margin-bottom:6px}.field textarea{min-height:110px;resize:vertical}.span2{grid-column:1/-1}.historyGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.record{border:1px solid #d6deea;border-radius:14px;padding:12px;margin-top:10px}.recordTop{display:flex;gap:12px;justify-content:space-between;align-items:start;flex-wrap:wrap}.record p{color:#344150;line-height:1.45;margin:8px 0 0}.smallBtn{padding:8px 10px;border-radius:10px;font-size:13px}.muted{color:#5c6978}.sideNote{padding:10px}.warning{background:#fff5df;border:1px solid #f0d38a;color:#7a5200;border-radius:12px;padding:12px}.fileHint{background:#eef3f9;border:1px dashed #2469a8;border-radius:12px;padding:12px;font-weight:700;color:#24415f}.fileName{font-size:13px;color:#5c6978!important;word-break:break-all}.printOverlay{position:fixed;inset:0;background:#f6f8fb;z-index:20;overflow:auto;padding:22px}.printToolbar{max-width:900px;margin:0 auto 14px;display:flex;justify-content:flex-end;gap:10px}.printPage{max-width:900px;margin:0 auto;background:white;border:1px solid #d6deea;border-radius:18px;padding:28px;box-shadow:0 10px 28px rgba(0,0,0,.06)}.printHeader{border-bottom:3px solid #2469a8;padding-bottom:14px;margin-bottom:18px;display:flex;justify-content:space-between;gap:18px}.printHeader h1{margin:0;color:#2469a8}.printHeader p{margin:6px 0 0;color:#5c6978}.printMeta{text-align:right;line-height:1.6}.infoGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-bottom:16px;font-size:14px}.printBlock{border:1px solid #d6deea;border-radius:12px;padding:12px 14px;margin-bottom:10px}.printBlock h3{margin:0 0 8px;font-size:13px;color:#2469a8;text-transform:uppercase;letter-spacing:.4px}.printBlock p{white-space:pre-wrap;line-height:1.55;margin:0}@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid #d6deea}.formGrid,.historyGrid,.infoGrid{grid-template-columns:1fr}.main{padding:14px}.printHeader{flex-direction:column}.printMeta{text-align:left}}@media print{body{background:white}.layout,.noPrint{display:none!important}.printOverlay{position:static;padding:0;background:white}.printPage{border:0;border-radius:0;box-shadow:none;max-width:none;padding:18mm}}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  color: #102033;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #ffffff;
+  border-right: 1px solid #d8e2ef;
+  padding: 22px;
+}
+
+.brand {
+  background: #1f6fac;
+  color: white;
+  padding: 22px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 34px;
+}
+
+.brand p {
+  margin: 8px 0 0;
+  font-size: 20px;
+}
+
+.primary {
+  background: #1f6fac;
+  color: white;
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.full {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.search {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #cfd9e6;
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+.clientList {
+  display: grid;
+  gap: 12px;
+}
+
+.client {
+  text-align: left;
+  border: 1px solid #d8e2ef;
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  cursor: pointer;
+}
+
+.client.active {
+  border-color: #1f6fac;
+  background: #eef6ff;
+}
+
+.client strong,
+.client span {
+  display: block;
+}
+
+.client span {
+  color: #5f7085;
+  margin-top: 6px;
+}
+
+.main {
+  padding: 28px;
+}
+
+.topCard,
+.card {
+  background: white;
+  border: 1px solid #d8e2ef;
+  border-radius: 22px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.topCard h2 {
+  margin: 0;
+  font-size: 34px;
+}
+
+.topCard p {
+  margin: 8px 0 0;
+  color: #5f7085;
+  font-size: 20px;
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tabs button {
+  border: 1px solid #d8e2ef;
+  background: white;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tabs button.on {
+  background: #1f6fac;
+  color: white;
+  border-color: #1f6fac;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.field span {
+  display: block;
+  font-weight: bold;
+  color: #4c5f75;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 13px;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  border: 1px solid #cfd9e6;
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: white;
+}
+
+.field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.span2 {
+  grid-column: span 2;
+}
+
+.historyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.record {
+  border: 1px solid #d8e2ef;
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 14px;
+  background: #fbfdff;
+}
+
+.record button {
+  margin-top: 10px;
+  border: 0;
+  background: #102033;
+  color: white;
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.printOverlay {
+  position: fixed;
+  inset: 0;
+  background: #eef2f6;
+  z-index: 999;
+  overflow: auto;
+  padding: 24px;
+}
+
+.printActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.printActions button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #cfd9e6;
+  background: white;
+  cursor: pointer;
+}
+
+.printPage {
+  background: white;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 34px;
+  border-radius: 12px;
+}
+
+.printHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 2px solid #102033;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+}
+
+.printHeader h1 {
+  margin: 0;
+}
+
+.printInfo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 20px;
+  margin-bottom: 20px;
+}
+
+.printBlock {
+  border-top: 1px solid #ddd;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.printBlock h3 {
+  margin: 0 0 8px;
+}
+
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .grid,
+  .historyGrid,
+  .printInfo {
+    grid-template-columns: 1fr;
+  }
+
+  .span2 {
+    grid-column: span 1;
+  }
+}
+
+@media print {
+  .noPrint,
+  .sidebar,
+  .main {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+
+  .printOverlay {
+    position: static;
+    padding: 0;
+    background: white;
+  }
+
+  .printPage {
+    box-shadow: none;
+    border-radius: 0;
+    max-width: none;
+  }
+}
