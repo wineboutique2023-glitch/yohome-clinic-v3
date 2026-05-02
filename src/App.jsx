@@ -53,13 +53,8 @@ export default function App() {
   useEffect(() => {
     fetchClients();
 
-    const savedTherapists = localStorage.getItem("yohome_therapists");
-
-    if (savedTherapists) {
-      setTherapists(JSON.parse(savedTherapists));
-    } else {
-      setTherapists(["Zheng Yi", "Tree", "Nancy", "Cedrick"]);
-    }
+    const saved = localStorage.getItem("yohome_therapists");
+    setTherapists(saved ? JSON.parse(saved) : ["Zheng Yi", "Tree", "Nancy", "Cedrick"]);
   }, []);
 
   useEffect(() => {
@@ -72,11 +67,7 @@ export default function App() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
+    if (error) return alert(error.message);
     setClients(data || []);
   }
 
@@ -84,7 +75,6 @@ export default function App() {
     setSelectedClient(client);
     setClientForm(client);
     setActiveTab("client");
-
     await fetchIntake(client.id);
     await fetchSoapNotes(client.id);
   }
@@ -96,11 +86,7 @@ export default function App() {
       .eq("client_id", clientId)
       .maybeSingle();
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
+    if (error) return alert(error.message);
     setIntakeForm(data || emptyIntake);
   }
 
@@ -111,57 +97,39 @@ export default function App() {
       .eq("client_id", clientId)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
+    if (error) return alert(error.message);
     setSoapNotes(data || []);
   }
 
   function handleClientChange(e) {
-    const { name, value } = e.target;
-    setClientForm({ ...clientForm, [name]: value });
+    setClientForm({ ...clientForm, [e.target.name]: e.target.value });
   }
 
   function handleIntakeChange(e) {
     const { name, value, type, checked } = e.target;
-    setIntakeForm({
-      ...intakeForm,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    setIntakeForm({ ...intakeForm, [name]: type === "checkbox" ? checked : value });
   }
 
   function handleSoapChange(e) {
-    const { name, value } = e.target;
-    setSoapForm({ ...soapForm, [name]: value });
+    setSoapForm({ ...soapForm, [e.target.name]: e.target.value });
   }
 
   function addTherapist() {
     const name = newTherapist.trim();
-
     if (!name) return;
-
-    if (therapists.includes(name)) {
-      alert("Therapist already exists.");
-      return;
-    }
-
+    if (therapists.includes(name)) return alert("Therapist already exists.");
     setTherapists([...therapists, name]);
     setNewTherapist("");
   }
 
   function deleteTherapist(name) {
-    const confirmDelete = window.confirm(`Delete therapist "${name}"?`);
-    if (!confirmDelete) return;
-
+    if (!window.confirm(`Delete therapist "${name}"?`)) return;
     setTherapists(therapists.filter((t) => t !== name));
   }
 
   async function saveNewClient() {
     if (!clientForm.first_name && !clientForm.last_name) {
-      alert("Please enter client name.");
-      return;
+      return alert("Please enter client name.");
     }
 
     setLoading(true);
@@ -174,10 +142,7 @@ export default function App() {
 
     setLoading(false);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+    if (error) return alert(error.message);
 
     await fetchClients();
     await selectClient(data);
@@ -185,10 +150,7 @@ export default function App() {
   }
 
   async function updateClient() {
-    if (!selectedClient) {
-      alert("Please select a client first.");
-      return;
-    }
+    if (!selectedClient) return alert("Please select a client first.");
 
     setLoading(true);
 
@@ -199,52 +161,36 @@ export default function App() {
 
     setLoading(false);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+    if (error) return alert(error.message);
 
     await fetchClients();
     alert("Client updated.");
   }
 
   async function deleteClient() {
-    if (!selectedClient) {
-      alert("Please select a client first.");
+    if (!selectedClient) return alert("Please select a client first.");
+
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this client? This will also delete their intake and SOAP notes."
+      )
+    )
       return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this client? This will also delete their intake and SOAP notes."
-    );
-
-    if (!confirmDelete) return;
 
     const { error } = await supabase
       .from("clients")
       .delete()
       .eq("id", selectedClient.id);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+    if (error) return alert(error.message);
 
-    setSelectedClient(null);
-    setClientForm(emptyClient);
-    setIntakeForm(emptyIntake);
-    setSoapForm(emptySoap);
-    setSoapNotes([]);
-
+    newClient();
     await fetchClients();
     alert("Client deleted.");
   }
 
   async function saveIntake() {
-    if (!selectedClient) {
-      alert("Please select a client first.");
-      return;
-    }
+    if (!selectedClient) return alert("Please select a client first.");
 
     const intakeData = {
       ...intakeForm,
@@ -266,20 +212,14 @@ export default function App() {
         .single();
     }
 
-    if (result.error) {
-      alert(result.error.message);
-      return;
-    }
+    if (result.error) return alert(result.error.message);
 
     await fetchIntake(selectedClient.id);
     alert("Intake form saved.");
   }
 
   async function saveSoapNote() {
-    if (!selectedClient) {
-      alert("Please select a client first.");
-      return;
-    }
+    if (!selectedClient) return alert("Please select a client first.");
 
     const soapData = {
       ...soapForm,
@@ -288,10 +228,7 @@ export default function App() {
 
     const { error } = await supabase.from("soap_notes").insert([soapData]);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+    if (error) return alert(error.message);
 
     setSoapForm(emptySoap);
     await fetchSoapNotes(selectedClient.id);
@@ -299,28 +236,19 @@ export default function App() {
   }
 
   async function deleteSoapNote(id) {
-    const confirmDelete = window.confirm("Delete this SOAP note?");
-    if (!confirmDelete) return;
+    if (!window.confirm("Delete this SOAP note?")) return;
 
     const { error } = await supabase.from("soap_notes").delete().eq("id", id);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+    if (error) return alert(error.message);
 
     await fetchSoapNotes(selectedClient.id);
   }
 
   function downloadSoapPdf() {
-    if (!selectedClient) {
-      alert("Please select a client first.");
-      return;
-    }
+    if (!selectedClient) return alert("Please select a client first.");
 
-    const clientName = `${selectedClient.first_name || ""} ${
-      selectedClient.last_name || ""
-    }`;
+    const clientName = `${selectedClient.first_name || ""} ${selectedClient.last_name || ""}`;
 
     const win = window.open("", "_blank");
 
@@ -335,45 +263,29 @@ export default function App() {
               color: #09223f;
               line-height: 1.6;
             }
-
-            h1 {
-              color: #0f3d5e;
-              margin-bottom: 5px;
-            }
-
+            h1 { color: #0f3d5e; margin-bottom: 4px; }
             h2 {
               border-bottom: 1px solid #ccc;
               padding-bottom: 6px;
-              margin-top: 28px;
+              margin-top: 26px;
             }
-
-            .info {
-              margin-bottom: 20px;
-              font-size: 14px;
-            }
-
-            .section {
-              margin-bottom: 18px;
-            }
-
-            .label {
-              font-weight: bold;
-              color: #0f3d5e;
-            }
-
             .box {
               border: 1px solid #d6e2ee;
               border-radius: 10px;
               padding: 12px;
-              min-height: 60px;
+              min-height: 55px;
               white-space: pre-wrap;
+            }
+            .label {
+              font-weight: bold;
+              color: #0f3d5e;
+              margin-top: 14px;
             }
           </style>
         </head>
-
         <body>
           <h1>YOHOME Massage & Myotherapy</h1>
-          <div class="info">SOAP Treatment Note</div>
+          <p>SOAP Treatment Note</p>
 
           <h2>Client Information</h2>
           <p><b>Client:</b> ${clientName}</p>
@@ -386,34 +298,22 @@ export default function App() {
 
           <h2>SOAP Note</h2>
 
-          <div class="section">
-            <div class="label">S - Subjective</div>
-            <div class="box">${soapForm.subjective || ""}</div>
-          </div>
+          <div class="label">S - Subjective</div>
+          <div class="box">${soapForm.subjective || ""}</div>
 
-          <div class="section">
-            <div class="label">O - Objective</div>
-            <div class="box">${soapForm.objective || ""}</div>
-          </div>
+          <div class="label">O - Objective</div>
+          <div class="box">${soapForm.objective || ""}</div>
 
-          <div class="section">
-            <div class="label">A - Assessment</div>
-            <div class="box">${soapForm.assessment || ""}</div>
-          </div>
+          <div class="label">A - Assessment</div>
+          <div class="box">${soapForm.assessment || ""}</div>
 
-          <div class="section">
-            <div class="label">P - Plan</div>
-            <div class="box">${soapForm.plan || ""}</div>
-          </div>
+          <div class="label">P - Plan</div>
+          <div class="box">${soapForm.plan || ""}</div>
 
-          <div class="section">
-            <div class="label">Therapist Notes</div>
-            <div class="box">${soapForm.therapist_notes || ""}</div>
-          </div>
+          <div class="label">Therapist Notes</div>
+          <div class="box">${soapForm.therapist_notes || ""}</div>
 
-          <script>
-            window.print();
-          </script>
+          <script>window.print();</script>
         </body>
       </html>
     `);
@@ -441,8 +341,10 @@ export default function App() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <h2>YOHOME</h2>
-        <p>Client Records</p>
+        <div className="brand">
+          <h2>YOHOME</h2>
+          <p>Client Records</p>
+        </div>
 
         <input
           className="search"
@@ -460,32 +362,30 @@ export default function App() {
             <button
               key={client.id}
               className={
-                selectedClient?.id === client.id
-                  ? "clientItem active"
-                  : "clientItem"
+                selectedClient?.id === client.id ? "clientItem active" : "clientItem"
               }
               onClick={() => selectClient(client)}
             >
               <strong>
                 {client.first_name} {client.last_name}
               </strong>
-              <span>{client.phone}</span>
+              <span>{client.phone || "No phone"}</span>
             </button>
           ))}
         </div>
       </aside>
 
       <main className="main">
-        <div className="header">
-          <h1>
-            {selectedClient
-              ? `${selectedClient.first_name || ""} ${
-                  selectedClient.last_name || ""
-                }`
-              : "New Client"}
-          </h1>
-          <p>Client registration, intake form and SOAP notes</p>
-        </div>
+        <header className="header">
+          <div>
+            <h1>
+              {selectedClient
+                ? `${selectedClient.first_name || ""} ${selectedClient.last_name || ""}`
+                : "New Client"}
+            </h1>
+            <p>Client registration, intake form and SOAP notes</p>
+          </div>
+        </header>
 
         <div className="tabs">
           <button
@@ -512,7 +412,10 @@ export default function App() {
 
         {activeTab === "client" && (
           <section className="card">
-            <h2>Client Information</h2>
+            <div className="cardTitle">
+              <h2>Client Information</h2>
+              <p>Basic client contact and clinical note details.</p>
+            </div>
 
             <div className="grid">
               <label>
@@ -590,13 +493,11 @@ export default function App() {
             </label>
 
             <div className="actions">
-              {!selectedClient && (
+              {!selectedClient ? (
                 <button onClick={saveNewClient} disabled={loading}>
                   Save New Client
                 </button>
-              )}
-
-              {selectedClient && (
+              ) : (
                 <>
                   <button onClick={updateClient} disabled={loading}>
                     Update Client
@@ -613,7 +514,10 @@ export default function App() {
 
         {activeTab === "intake" && (
           <section className="card">
-            <h2>Intake Form</h2>
+            <div className="cardTitle">
+              <h2>Intake Form</h2>
+              <p>Client health history, concerns and consent.</p>
+            </div>
 
             {!selectedClient && (
               <p className="warning">Please save or select a client first.</p>
@@ -637,14 +541,16 @@ export default function App() {
               />
             </label>
 
-            <label>
-              Pain Level /10
-              <input
-                name="pain_level"
-                value={intakeForm.pain_level || ""}
-                onChange={handleIntakeChange}
-              />
-            </label>
+            <div className="grid">
+              <label>
+                Pain Level /10
+                <input
+                  name="pain_level"
+                  value={intakeForm.pain_level || ""}
+                  onChange={handleIntakeChange}
+                />
+              </label>
+            </div>
 
             <label>
               Medical History
@@ -700,7 +606,10 @@ export default function App() {
 
         {activeTab === "soap" && (
           <section className="card">
-            <h2>SOAP Notes</h2>
+            <div className="cardTitle">
+              <h2>SOAP Notes</h2>
+              <p>Record treatment notes and download a printable PDF.</p>
+            </div>
 
             {!selectedClient && (
               <p className="warning">Please save or select a client first.</p>
@@ -735,7 +644,12 @@ export default function App() {
             </div>
 
             <div className="therapistBox">
-              <h3>Manage Therapists</h3>
+              <div className="therapistHeader">
+                <div>
+                  <h3>Manage Therapists</h3>
+                  <p>Add or remove therapist names for SOAP records.</p>
+                </div>
+              </div>
 
               <div className="therapistAdd">
                 <input
@@ -753,10 +667,7 @@ export default function App() {
                 {therapists.map((therapist) => (
                   <div className="therapistTag" key={therapist}>
                     <span>{therapist}</span>
-                    <button
-                      type="button"
-                      onClick={() => deleteTherapist(therapist)}
-                    >
+                    <button type="button" onClick={() => deleteTherapist(therapist)}>
                       ×
                     </button>
                   </div>
@@ -816,44 +727,38 @@ export default function App() {
             <div className="actions">
               <button onClick={saveSoapNote}>Save SOAP Note</button>
 
-              <button type="button" onClick={downloadSoapPdf}>
+              <button type="button" className="secondary" onClick={downloadSoapPdf}>
                 Download PDF
               </button>
             </div>
 
-            <h3>Previous SOAP Notes</h3>
+            <div className="historyTitle">
+              <h3>Previous SOAP Notes</h3>
+            </div>
 
             <div className="soapHistory">
               {soapNotes.map((note) => (
                 <div className="soapItem" key={note.id}>
                   <div className="soapTop">
-                    <strong>{note.treatment_date || "No date"}</strong>
+                    <div>
+                      <strong>{note.treatment_date || "No date"}</strong>
+                      <span>{note.therapist_name || "Therapist not recorded"}</span>
+                    </div>
 
-                    <button
-                      className="smallDanger"
-                      onClick={() => deleteSoapNote(note.id)}
-                    >
+                    <button className="smallDanger" onClick={() => deleteSoapNote(note.id)}>
                       Delete
                     </button>
                   </div>
 
                   <p>
-                    <b>Therapist:</b>{" "}
-                    {note.therapist_name || "Not recorded"}
-                  </p>
-
-                  <p>
                     <b>S:</b> {note.subjective}
                   </p>
-
                   <p>
                     <b>O:</b> {note.objective}
                   </p>
-
                   <p>
                     <b>A:</b> {note.assessment}
                   </p>
-
                   <p>
                     <b>P:</b> {note.plan}
                   </p>
