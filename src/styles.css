@@ -2,39 +2,58 @@
   box-sizing: border-box;
 }
 
+:root {
+  --navy: #0f3d5e;
+  --navy-dark: #09223f;
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --line: #d6e2ee;
+  --muted: #64748b;
+  --soft: #f8fbfd;
+  --danger: #b42318;
+}
+
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;
-  background: #f4f7fb;
-  color: #09223f;
+  background: var(--bg);
+  color: var(--navy-dark);
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 .app {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 310px 1fr;
 }
 
 .sidebar {
   background: #ffffff;
-  border-right: 1px solid #dbe5ef;
-  padding: 32px 24px;
+  border-right: 1px solid var(--line);
+  padding: 30px 24px;
 }
 
-.sidebar h2 {
+.brand h2 {
   margin: 0;
-  font-size: 32px;
+  font-size: 30px;
   letter-spacing: 1px;
 }
 
-.sidebar p {
-  margin: 8px 0 26px;
-  color: #64748b;
+.brand p {
+  margin: 6px 0 24px;
+  color: var(--muted);
 }
 
 .search,
 input,
-textarea {
+textarea,
+select {
   width: 100%;
   border: 1px solid #cbd8e6;
   border-radius: 14px;
@@ -46,20 +65,21 @@ textarea {
 
 .search:focus,
 input:focus,
-textarea:focus {
-  border-color: #0f3d5e;
+textarea:focus,
+select:focus {
+  border-color: var(--navy);
   box-shadow: 0 0 0 3px rgba(15, 61, 94, 0.12);
 }
 
 .newBtn {
   width: 100%;
-  margin: 18px 0;
-  padding: 14px 18px;
+  margin: 18px 0 22px;
+  padding: 15px 18px;
   border: none;
-  border-radius: 14px;
-  background: #0f3d5e;
+  border-radius: 15px;
+  background: var(--navy);
   color: white;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 15px;
   cursor: pointer;
 }
@@ -73,11 +93,17 @@ textarea:focus {
 .clientItem {
   width: 100%;
   text-align: left;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid #dbe5ef;
-  background: #f8fbfd;
+  padding: 17px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--soft);
   cursor: pointer;
+  transition: 0.15s;
+}
+
+.clientItem:hover {
+  transform: translateY(-1px);
+  border-color: var(--navy);
 }
 
 .clientItem strong {
@@ -87,14 +113,14 @@ textarea:focus {
 
 .clientItem span {
   display: block;
-  margin-top: 5px;
-  color: #64748b;
+  margin-top: 6px;
+  color: var(--muted);
   font-size: 14px;
 }
 
 .clientItem.active {
   background: #eaf2f8;
-  border-color: #0f3d5e;
+  border-color: var(--navy);
 }
 
 .main {
@@ -104,11 +130,12 @@ textarea:focus {
 .header h1 {
   margin: 0;
   font-size: 42px;
+  letter-spacing: -0.5px;
 }
 
 .header p {
-  margin-top: 10px;
-  color: #64748b;
+  margin: 10px 0 0;
+  color: var(--muted);
   font-size: 17px;
 }
 
@@ -116,35 +143,50 @@ textarea:focus {
   display: flex;
   gap: 14px;
   margin: 28px 0 30px;
+  flex-wrap: wrap;
 }
 
 .tab {
-  border: 1px solid #d6e2ee;
+  border: 1px solid var(--line);
   background: #ffffff;
   border-radius: 999px;
-  padding: 14px 30px;
+  padding: 14px 32px;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
+  transition: 0.15s;
+}
+
+.tab:hover {
+  border-color: var(--navy);
 }
 
 .tab.active {
-  background: #0f3d5e;
+  background: var(--navy);
   color: white;
-  border-color: #0f3d5e;
+  border-color: var(--navy);
 }
 
 .card {
-  background: white;
-  border: 1px solid #dbe5ef;
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: 28px;
   padding: 36px;
   box-shadow: 0 18px 45px rgba(15, 61, 94, 0.08);
 }
 
-.card h2 {
-  margin-top: 0;
-  font-size: 28px;
+.cardTitle {
+  margin-bottom: 26px;
+}
+
+.cardTitle h2 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.cardTitle p {
+  margin: 8px 0 0;
+  color: var(--muted);
 }
 
 .grid {
@@ -155,19 +197,21 @@ textarea:focus {
 
 label {
   display: block;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 20px;
 }
 
 label input,
-label textarea {
+label textarea,
+label select {
   margin-top: 8px;
   font-weight: 400;
 }
 
 textarea {
-  min-height: 110px;
+  min-height: 115px;
   resize: vertical;
+  line-height: 1.5;
 }
 
 .checkbox {
@@ -178,126 +222,80 @@ textarea {
 
 .checkbox input {
   width: auto;
+  margin: 0;
+}
+
+.warning {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #9a3412;
+  border-radius: 15px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
 }
 
 .actions {
   display: flex;
   gap: 14px;
-  margin-top: 20px;
+  margin-top: 24px;
+  flex-wrap: wrap;
 }
 
 .actions button {
   border: none;
-  border-radius: 14px;
+  border-radius: 15px;
   padding: 14px 24px;
-  background: #0f3d5e;
+  background: var(--navy);
   color: white;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
+}
+
+.actions button.secondary {
+  background: #ffffff;
+  color: var(--navy);
+  border: 1px solid var(--navy);
 }
 
 .actions .danger,
 .danger,
 .smallDanger {
-  background: #b42318;
-}
-
-.warning {
-  background: #fff4e5;
-  border: 1px solid #ffd8a8;
-  color: #92400e;
-  border-radius: 14px;
-  padding: 14px 16px;
-}
-
-.soapHistory {
-  display: grid;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.soapItem {
-  border: 1px solid #dbe5ef;
-  border-radius: 20px;
-  padding: 20px;
-  background: #f8fbfd;
-}
-
-.soapTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.smallDanger {
-  border: none;
-  color: white;
-  border-radius: 10px;
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-@media (max-width: 900px) {
-  .app {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    border-right: none;
-    border-bottom: 1px solid #dbe5ef;
-  }
-
-  .main {
-    padding: 24px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .tabs {
-    flex-wrap: wrap;
-    select {
-  width: 100%;
-  border: 1px solid #cbd8e6;
-  border-radius: 14px;
-  padding: 14px 16px;
-  font-size: 15px;
-  background: #ffffff;
-  outline: none;
-  margin-top: 8px;
+  background: var(--danger);
 }
 
 .therapistBox {
-  background: #f8fbfd;
-  border: 1px solid #dbe5ef;
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 24px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 22px;
+  margin: 4px 0 26px;
 }
 
-.therapistBox h3 {
-  margin-top: 0;
+.therapistHeader h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.therapistHeader p {
+  margin: 6px 0 18px;
+  color: var(--muted);
 }
 
 .therapistAdd {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 12px;
-  margin-bottom: 16px;
-}
-
-.therapistAdd input {
-  max-width: 320px;
+  margin-bottom: 18px;
 }
 
 .therapistAdd button {
   border: none;
   border-radius: 14px;
-  padding: 12px 18px;
-  background: #0f3d5e;
+  padding: 0 20px;
+  background: var(--navy);
   color: white;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
 }
 
@@ -308,23 +306,108 @@ textarea {
 }
 
 .therapistTag {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: white;
-  border: 1px solid #d6e2ee;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 8px 12px;
+  padding: 9px 12px 9px 16px;
+  font-weight: 700;
 }
 
 .therapistTag button {
   border: none;
-  background: #b42318;
+  background: var(--danger);
   color: white;
   border-radius: 999px;
-  width: 22px;
-  height: 22px;
+  width: 23px;
+  height: 23px;
+  line-height: 20px;
   cursor: pointer;
+  font-size: 16px;
 }
+
+.historyTitle {
+  margin-top: 34px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+
+.historyTitle h3 {
+  margin: 0 0 16px;
+  font-size: 22px;
+}
+
+.soapHistory {
+  display: grid;
+  gap: 16px;
+}
+
+.soapItem {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px;
+  background: var(--soft);
+}
+
+.soapTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.soapTop strong {
+  display: block;
+  font-size: 17px;
+}
+
+.soapTop span {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.smallDanger {
+  border: none;
+  color: white;
+  border-radius: 11px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.soapItem p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 950px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .main {
+    padding: 24px;
+  }
+
+  .grid,
+  .therapistAdd {
+    grid-template-columns: 1fr;
+  }
+
+  .header h1 {
+    font-size: 34px;
+  }
+
+  .card {
+    padding: 24px;
   }
 }
