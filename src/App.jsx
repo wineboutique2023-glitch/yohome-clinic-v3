@@ -38,16 +38,33 @@ export default function App() {
   const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedClient, setSelectedClient] = useState(null);
+
   const [clientForm, setClientForm] = useState(emptyClient);
   const [intakeForm, setIntakeForm] = useState(emptyIntake);
   const [soapForm, setSoapForm] = useState(emptySoap);
   const [soapNotes, setSoapNotes] = useState([]);
+
   const [activeTab, setActiveTab] = useState("client");
   const [loading, setLoading] = useState(false);
 
+  const [therapists, setTherapists] = useState([]);
+  const [newTherapist, setNewTherapist] = useState("");
+
   useEffect(() => {
     fetchClients();
+
+    const savedTherapists = localStorage.getItem("yohome_therapists");
+
+    if (savedTherapists) {
+      setTherapists(JSON.parse(savedTherapists));
+    } else {
+      setTherapists(["Zheng Yi", "Tree", "Nancy", "Cedrick"]);
+    }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("yohome_therapists", JSON.stringify(therapists));
+  }, [therapists]);
 
   async function fetchClients() {
     const { data, error } = await supabase
@@ -67,6 +84,7 @@ export default function App() {
     setSelectedClient(client);
     setClientForm(client);
     setActiveTab("client");
+
     await fetchIntake(client.id);
     await fetchSoapNotes(client.id);
   }
@@ -117,6 +135,27 @@ export default function App() {
   function handleSoapChange(e) {
     const { name, value } = e.target;
     setSoapForm({ ...soapForm, [name]: value });
+  }
+
+  function addTherapist() {
+    const name = newTherapist.trim();
+
+    if (!name) return;
+
+    if (therapists.includes(name)) {
+      alert("Therapist already exists.");
+      return;
+    }
+
+    setTherapists([...therapists, name]);
+    setNewTherapist("");
+  }
+
+  function deleteTherapist(name) {
+    const confirmDelete = window.confirm(`Delete therapist "${name}"?`);
+    if (!confirmDelete) return;
+
+    setTherapists(therapists.filter((t) => t !== name));
   }
 
   async function saveNewClient() {
@@ -196,8 +235,8 @@ export default function App() {
     setIntakeForm(emptyIntake);
     setSoapForm(emptySoap);
     setSoapNotes([]);
-    await fetchClients();
 
+    await fetchClients();
     alert("Client deleted.");
   }
 
@@ -296,26 +335,32 @@ export default function App() {
               color: #09223f;
               line-height: 1.6;
             }
+
             h1 {
               color: #0f3d5e;
               margin-bottom: 5px;
             }
+
             h2 {
               border-bottom: 1px solid #ccc;
               padding-bottom: 6px;
               margin-top: 28px;
             }
+
             .info {
               margin-bottom: 20px;
               font-size: 14px;
             }
+
             .section {
               margin-bottom: 18px;
             }
+
             .label {
               font-weight: bold;
               color: #0f3d5e;
             }
+
             .box {
               border: 1px solid #d6e2ee;
               border-radius: 10px;
@@ -325,6 +370,7 @@ export default function App() {
             }
           </style>
         </head>
+
         <body>
           <h1>YOHOME Massage & Myotherapy</h1>
           <div class="info">SOAP Treatment Note</div>
@@ -679,12 +725,43 @@ export default function App() {
                   onChange={handleSoapChange}
                 >
                   <option value="">Select therapist</option>
-                  <option value="Zheng Yi">Zheng Yi</option>
-                  <option value="Tree">Tree</option>
-                  <option value="Nancy">Nancy</option>
-                  <option value="Cedrick">Cedrick</option>
+                  {therapists.map((therapist) => (
+                    <option key={therapist} value={therapist}>
+                      {therapist}
+                    </option>
+                  ))}
                 </select>
               </label>
+            </div>
+
+            <div className="therapistBox">
+              <h3>Manage Therapists</h3>
+
+              <div className="therapistAdd">
+                <input
+                  placeholder="Enter therapist name"
+                  value={newTherapist}
+                  onChange={(e) => setNewTherapist(e.target.value)}
+                />
+
+                <button type="button" onClick={addTherapist}>
+                  Add Therapist
+                </button>
+              </div>
+
+              <div className="therapistList">
+                {therapists.map((therapist) => (
+                  <div className="therapistTag" key={therapist}>
+                    <span>{therapist}</span>
+                    <button
+                      type="button"
+                      onClick={() => deleteTherapist(therapist)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <label>
@@ -738,6 +815,7 @@ export default function App() {
 
             <div className="actions">
               <button onClick={saveSoapNote}>Save SOAP Note</button>
+
               <button type="button" onClick={downloadSoapPdf}>
                 Download PDF
               </button>
@@ -750,6 +828,7 @@ export default function App() {
                 <div className="soapItem" key={note.id}>
                   <div className="soapTop">
                     <strong>{note.treatment_date || "No date"}</strong>
+
                     <button
                       className="smallDanger"
                       onClick={() => deleteSoapNote(note.id)}
