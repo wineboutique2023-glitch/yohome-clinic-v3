@@ -459,7 +459,7 @@ export default function App() {
               <strong>
                 {client.first_name} {client.last_name}
               </strong>
-              <span>{client.phone || "No phone"}</span>
+              
             </button>
           ))}
         </div>
@@ -525,14 +525,14 @@ export default function App() {
                   onChange={handleClientChange}
                 />
               </label>
-               <label>
+
+              <label>
                 Phone
                 <input
-                  
+                  name="phone"
                   value={clientForm.phone || ""}
                   onChange={handleClientChange}
                 />
-
               </label>
 
               <label>
