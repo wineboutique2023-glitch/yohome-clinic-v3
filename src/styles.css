@@ -258,5 +258,73 @@ textarea {
 
   .tabs {
     flex-wrap: wrap;
+    select {
+  width: 100%;
+  border: 1px solid #cbd8e6;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 15px;
+  background: #ffffff;
+  outline: none;
+  margin-top: 8px;
+}
+
+.therapistBox {
+  background: #f8fbfd;
+  border: 1px solid #dbe5ef;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.therapistBox h3 {
+  margin-top: 0;
+}
+
+.therapistAdd {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.therapistAdd input {
+  max-width: 320px;
+}
+
+.therapistAdd button {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  background: #0f3d5e;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.therapistList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.therapistTag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #d6e2ee;
+  border-radius: 999px;
+  padding: 8px 12px;
+}
+
+.therapistTag button {
+  border: none;
+  background: #b42318;
+  color: white;
+  border-radius: 999px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
   }
 }
