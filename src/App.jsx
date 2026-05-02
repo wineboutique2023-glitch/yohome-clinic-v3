@@ -525,15 +525,7 @@ export default function App() {
                   onChange={handleClientChange}
                 />
               </label>
-               <label>
-                Phone
-                <input
-                  name="phone"
-                  value={clientForm.phone || ""}
-                  onChange={handleClientChange}
-                />
-
-              </label>
+              
 
               <label>
                 Email
