@@ -22,6 +22,10 @@ const emptyIntake = {
   allergies: "",
   contraindications: "",
   consent_given: false,
+  signature_name: "",
+  signature_date: "",
+  body_chart_notes: "",
+  risk_alerts: "",
 };
 
 const emptySoap = {
@@ -67,7 +71,6 @@ export default function App() {
     if (!name) return;
 
     const { error } = await supabase.from("therapists").insert([{ name }]);
-
     if (error) return alert(error.message);
 
     setNewTherapist("");
@@ -78,7 +81,6 @@ export default function App() {
     if (!window.confirm("Delete this therapist?")) return;
 
     const { error } = await supabase.from("therapists").delete().eq("id", id);
-
     if (error) return alert(error.message);
 
     await fetchTherapists();
@@ -240,7 +242,6 @@ export default function App() {
     };
 
     const { error } = await supabase.from("soap_notes").insert([soapData]);
-
     if (error) return alert(error.message);
 
     setSoapForm(emptySoap);
@@ -252,7 +253,6 @@ export default function App() {
     if (!window.confirm("Delete this SOAP note?")) return;
 
     const { error } = await supabase.from("soap_notes").delete().eq("id", id);
-
     if (error) return alert(error.message);
 
     await fetchSoapNotes(selectedClient.id);
@@ -394,7 +394,11 @@ export default function App() {
           <div class="label">Medications</div><div class="box">${safeText(intakeForm.medications)}</div>
           <div class="label">Allergies</div><div class="box">${safeText(intakeForm.allergies)}</div>
           <div class="label">Contraindications / Cautions</div><div class="box">${safeText(intakeForm.contraindications)}</div>
+          <div class="label">Body Chart Notes</div><div class="box">${safeText(intakeForm.body_chart_notes)}</div>
+          <div class="label">Risk Alerts</div><div class="box">${safeText(intakeForm.risk_alerts)}</div>
           <p><b>Consent Provided:</b> ${intakeForm.consent_given ? "Yes" : "No / Not recorded"}</p>
+          <p><b>Signature Name:</b> ${safeText(intakeForm.signature_name)}</p>
+          <p><b>Signature Date:</b> ${safeText(intakeForm.signature_date)}</p>
 
           <h2>SOAP Notes History</h2>
           ${soapHistoryHtml}
@@ -459,7 +463,6 @@ export default function App() {
               <strong>
                 {client.first_name} {client.last_name}
               </strong>
-              
             </button>
           ))}
         </div>
@@ -614,7 +617,7 @@ export default function App() {
           <section className="card">
             <div className="cardTitle">
               <h2>Intake Form</h2>
-              <p>Client health history, concerns and consent.</p>
+              <p>Client health history, consent, body chart and risk alerts.</p>
             </div>
 
             {!selectedClient && (
@@ -686,6 +689,26 @@ export default function App() {
               />
             </label>
 
+            <label>
+              Body Chart Notes
+              <textarea
+                name="body_chart_notes"
+                value={intakeForm.body_chart_notes || ""}
+                onChange={handleIntakeChange}
+                placeholder="Example: right shoulder, lower back, left hip..."
+              />
+            </label>
+
+            <label>
+              Risk Alerts
+              <textarea
+                name="risk_alerts"
+                value={intakeForm.risk_alerts || ""}
+                onChange={handleIntakeChange}
+                placeholder="Example: pregnancy, blood thinners, recent surgery..."
+              />
+            </label>
+
             <label className="checkbox">
               <input
                 type="checkbox"
@@ -695,6 +718,28 @@ export default function App() {
               />
               Client has provided consent for assessment and treatment.
             </label>
+
+            <div className="grid">
+              <label>
+                Signature Name
+                <input
+                  name="signature_name"
+                  value={intakeForm.signature_name || ""}
+                  onChange={handleIntakeChange}
+                  placeholder="Client full name"
+                />
+              </label>
+
+              <label>
+                Signature Date
+                <input
+                  type="date"
+                  name="signature_date"
+                  value={intakeForm.signature_date || ""}
+                  onChange={handleIntakeChange}
+                />
+              </label>
+            </div>
 
             <div className="actions">
               <button onClick={saveIntake}>Save Intake</button>
