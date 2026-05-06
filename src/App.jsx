@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase";
 import "./styles.css";
 
@@ -24,7 +24,9 @@ const emptyIntake = {
   consent_given: false,
   signature_name: "",
   signature_date: "",
+  signature_image: "",
   body_chart_notes: "",
+  body_chart_image: "",
   risk_alerts: "",
 };
 
@@ -51,10 +53,24 @@ export default function App() {
   const [therapists, setTherapists] = useState([]);
   const [newTherapist, setNewTherapist] = useState("");
 
+  const signatureRef = useRef(null);
+  const bodyChartRef = useRef(null);
+  const isSigningRef = useRef(false);
+  const isDrawingBodyRef = useRef(false);
+
   useEffect(() => {
     fetchClients();
     fetchTherapists();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "intake") return;
+
+    setTimeout(() => {
+      restoreSignatureCanvas();
+      restoreBodyChartCanvas();
+    }, 100);
+  }, [activeTab, selectedClient, intakeForm.signature_image, intakeForm.body_chart_image]);
 
   async function fetchTherapists() {
     const { data, error } = await supabase
@@ -112,7 +128,11 @@ export default function App() {
       .maybeSingle();
 
     if (error) return alert(error.message);
-    setIntakeForm(data || emptyIntake);
+
+    setIntakeForm({
+      ...emptyIntake,
+      ...(data || {}),
+    });
   }
 
   async function fetchSoapNotes(clientId) {
@@ -207,8 +227,14 @@ export default function App() {
   async function saveIntake() {
     if (!selectedClient) return alert("Please select a client first.");
 
-    const intakeData = {
+    const updatedIntake = {
       ...intakeForm,
+      signature_image: signatureRef.current
+        ? signatureRef.current.toDataURL("image/png")
+        : intakeForm.signature_image,
+      body_chart_image: bodyChartRef.current
+        ? bodyChartRef.current.toDataURL("image/png")
+        : intakeForm.body_chart_image,
       client_id: selectedClient.id,
     };
 
@@ -217,12 +243,12 @@ export default function App() {
     if (intakeForm.id) {
       result = await supabase
         .from("intake_forms")
-        .update(intakeData)
+        .update(updatedIntake)
         .eq("id", intakeForm.id);
     } else {
       result = await supabase
         .from("intake_forms")
-        .insert([intakeData])
+        .insert([updatedIntake])
         .select()
         .single();
     }
@@ -260,6 +286,206 @@ export default function App() {
 
   function safeText(value) {
     return value || "Not recorded";
+  }
+
+  function getCanvasPoint(canvas, event) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+
+    return {
+      x: (clientX - rect.left) * (canvas.width / rect.width),
+      y: (clientY - rect.top) * (canvas.height / rect.height),
+    };
+  }
+
+  function startSignature(e) {
+    e.preventDefault();
+    const canvas = signatureRef.current;
+    if (!canvas) return;
+
+    isSigningRef.current = true;
+    const ctx = canvas.getContext("2d");
+    const point = getCanvasPoint(canvas, e);
+
+    ctx.beginPath();
+    ctx.moveTo(point.x, point.y);
+  }
+
+  function drawSignature(e) {
+    e.preventDefault();
+    if (!isSigningRef.current) return;
+
+    const canvas = signatureRef.current;
+    const ctx = canvas.getContext("2d");
+    const point = getCanvasPoint(canvas, e);
+
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#09223f";
+    ctx.lineTo(point.x, point.y);
+    ctx.stroke();
+  }
+
+  function stopSignature() {
+    isSigningRef.current = false;
+
+    const canvas = signatureRef.current;
+    if (!canvas) return;
+
+    setIntakeForm((prev) => ({
+      ...prev,
+      signature_image: canvas.toDataURL("image/png"),
+    }));
+  }
+
+  function clearSignature() {
+    const canvas = signatureRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    setIntakeForm((prev) => ({
+      ...prev,
+      signature_image: "",
+    }));
+  }
+
+  function restoreSignatureCanvas() {
+    const canvas = signatureRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!intakeForm.signature_image) return;
+
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    img.src = intakeForm.signature_image;
+  }
+
+  function drawBodyTemplate() {
+    const canvas = bodyChartRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = "#0f3d5e";
+    ctx.lineWidth = 2;
+    ctx.fillStyle = "#09223f";
+    ctx.font = "15px Arial";
+
+    // Front body
+    ctx.beginPath();
+    ctx.arc(130, 55, 28, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeRect(105, 85, 50, 95);
+
+    ctx.beginPath();
+    ctx.moveTo(105, 100);
+    ctx.lineTo(70, 165);
+    ctx.moveTo(155, 100);
+    ctx.lineTo(190, 165);
+    ctx.moveTo(115, 180);
+    ctx.lineTo(95, 270);
+    ctx.moveTo(145, 180);
+    ctx.lineTo(165, 270);
+    ctx.stroke();
+
+    ctx.fillText("Front", 112, 310);
+
+    // Back body
+    ctx.beginPath();
+    ctx.arc(390, 55, 28, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeRect(365, 85, 50, 95);
+
+    ctx.beginPath();
+    ctx.moveTo(365, 100);
+    ctx.lineTo(330, 165);
+    ctx.moveTo(415, 100);
+    ctx.lineTo(450, 165);
+    ctx.moveTo(375, 180);
+    ctx.lineTo(355, 270);
+    ctx.moveTo(405, 180);
+    ctx.lineTo(425, 270);
+    ctx.stroke();
+
+    ctx.fillText("Back", 374, 310);
+  }
+
+  function restoreBodyChartCanvas() {
+    const canvas = bodyChartRef.current;
+    if (!canvas) return;
+
+    if (intakeForm.body_chart_image) {
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+      img.src = intakeForm.body_chart_image;
+    } else {
+      drawBodyTemplate();
+    }
+  }
+
+  function startBodyDraw(e) {
+    e.preventDefault();
+    const canvas = bodyChartRef.current;
+    if (!canvas) return;
+
+    isDrawingBodyRef.current = true;
+    const ctx = canvas.getContext("2d");
+    const point = getCanvasPoint(canvas, e);
+
+    ctx.beginPath();
+    ctx.moveTo(point.x, point.y);
+  }
+
+  function drawBody(e) {
+    e.preventDefault();
+    if (!isDrawingBodyRef.current) return;
+
+    const canvas = bodyChartRef.current;
+    const ctx = canvas.getContext("2d");
+    const point = getCanvasPoint(canvas, e);
+
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#b42318";
+    ctx.lineTo(point.x, point.y);
+    ctx.stroke();
+  }
+
+  function stopBodyDraw() {
+    isDrawingBodyRef.current = false;
+
+    const canvas = bodyChartRef.current;
+    if (!canvas) return;
+
+    setIntakeForm((prev) => ({
+      ...prev,
+      body_chart_image: canvas.toDataURL("image/png"),
+    }));
+  }
+
+  function clearBodyChart() {
+    drawBodyTemplate();
+
+    setIntakeForm((prev) => ({
+      ...prev,
+      body_chart_image: "",
+    }));
   }
 
   function openPdfWindow(html) {
@@ -316,6 +542,14 @@ export default function App() {
   function downloadFullReportPdf() {
     if (!selectedClient) return alert("Please select a client first.");
 
+    const latestSignature = signatureRef.current
+      ? signatureRef.current.toDataURL("image/png")
+      : intakeForm.signature_image;
+
+    const latestBodyChart = bodyChartRef.current
+      ? bodyChartRef.current.toDataURL("image/png")
+      : intakeForm.body_chart_image;
+
     const clientName = `${selectedClient.first_name || ""} ${
       selectedClient.last_name || ""
     }`;
@@ -363,6 +597,9 @@ export default function App() {
             .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px; }
             .label { font-weight: bold; color: #0f3d5e; margin-top: 12px; margin-bottom: 4px; }
             .box { border: 1px solid #d6e2ee; border-radius: 10px; padding: 11px; min-height: 42px; white-space: pre-wrap; background: #fbfdff; }
+            .imageBox { border: 1px solid #d6e2ee; border-radius: 10px; padding: 12px; background: #fbfdff; margin-top: 8px; }
+            .imageBox img { max-width: 100%; display: block; }
+            .signatureImage { max-width: 380px; }
             .soapBlock { page-break-inside: avoid; border: 1px solid #d6e2ee; border-radius: 14px; padding: 18px; margin-bottom: 20px; }
             .footer { margin-top: 36px; color: #666; font-size: 12px; border-top: 1px solid #ddd; padding-top: 12px; }
             @media print { body { padding: 24px; } .soapBlock { page-break-inside: avoid; } }
@@ -395,10 +632,20 @@ export default function App() {
           <div class="label">Allergies</div><div class="box">${safeText(intakeForm.allergies)}</div>
           <div class="label">Contraindications / Cautions</div><div class="box">${safeText(intakeForm.contraindications)}</div>
           <div class="label">Body Chart Notes</div><div class="box">${safeText(intakeForm.body_chart_notes)}</div>
+          ${
+            latestBodyChart
+              ? `<div class="label">Body Chart Image</div><div class="imageBox"><img src="${latestBodyChart}" /></div>`
+              : ""
+          }
           <div class="label">Risk Alerts</div><div class="box">${safeText(intakeForm.risk_alerts)}</div>
           <p><b>Consent Provided:</b> ${intakeForm.consent_given ? "Yes" : "No / Not recorded"}</p>
           <p><b>Signature Name:</b> ${safeText(intakeForm.signature_name)}</p>
           <p><b>Signature Date:</b> ${safeText(intakeForm.signature_date)}</p>
+          ${
+            latestSignature
+              ? `<div class="label">Client Signature</div><div class="imageBox signatureImage"><img src="${latestSignature}" /></div>`
+              : ""
+          }
 
           <h2>SOAP Notes History</h2>
           ${soapHistoryHtml}
@@ -699,6 +946,29 @@ export default function App() {
               />
             </label>
 
+            <div className="canvasBox">
+              <h3>Body Chart</h3>
+              <p>Circle or mark painful / restricted areas.</p>
+
+              <canvas
+                ref={bodyChartRef}
+                width="520"
+                height="330"
+                className="bodyCanvas"
+                onMouseDown={startBodyDraw}
+                onMouseMove={drawBody}
+                onMouseUp={stopBodyDraw}
+                onMouseLeave={stopBodyDraw}
+                onTouchStart={startBodyDraw}
+                onTouchMove={drawBody}
+                onTouchEnd={stopBodyDraw}
+              />
+
+              <button type="button" className="clearBtn" onClick={clearBodyChart}>
+                Clear Body Chart
+              </button>
+            </div>
+
             <label>
               Risk Alerts
               <textarea
@@ -739,6 +1009,29 @@ export default function App() {
                   onChange={handleIntakeChange}
                 />
               </label>
+            </div>
+
+            <div className="canvasBox">
+              <h3>Client Signature</h3>
+              <p>Client can sign directly using mouse, finger or iPad.</p>
+
+              <canvas
+                ref={signatureRef}
+                width="700"
+                height="180"
+                className="signatureCanvas"
+                onMouseDown={startSignature}
+                onMouseMove={drawSignature}
+                onMouseUp={stopSignature}
+                onMouseLeave={stopSignature}
+                onTouchStart={startSignature}
+                onTouchMove={drawSignature}
+                onTouchEnd={stopSignature}
+              />
+
+              <button type="button" className="clearBtn" onClick={clearSignature}>
+                Clear Signature
+              </button>
             </div>
 
             <div className="actions">
