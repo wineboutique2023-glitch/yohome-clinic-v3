@@ -411,3 +411,48 @@ textarea {
     padding: 24px;
   }
 }
+
+/* Canvas signature + body chart */
+.canvasBox {
+  background: #f8fbfd;
+  border: 1px solid #d6e2ee;
+  border-radius: 22px;
+  padding: 22px;
+  margin: 22px 0;
+}
+
+.canvasBox h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.canvasBox p {
+  margin: 6px 0 16px;
+  color: #64748b;
+}
+
+.signatureCanvas,
+.bodyCanvas {
+  width: 100%;
+  max-width: 760px;
+  background: #ffffff;
+  border: 1px solid #cbd8e6;
+  border-radius: 16px;
+  display: block;
+  touch-action: none;
+}
+
+.bodyCanvas {
+  max-width: 560px;
+}
+
+.clearBtn {
+  margin-top: 12px;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  background: #b42318;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
