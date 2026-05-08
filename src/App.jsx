@@ -33,16 +33,11 @@ const emptyIntake = {
 const emptySoap = {
   treatment_date: "",
   therapist_name: "",
-  pain_scale: "",
-  movement_restrictions: "",
-  treatment_methods: "",
   subjective: "",
   objective: "",
   assessment: "",
   plan: "",
-  follow_up: "",
   therapist_notes: "",
-  session_photos: "",
 };
 
 export default function App() {
@@ -51,6 +46,7 @@ export default function App() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientForm, setClientForm] = useState(emptyClient);
   const [intakeForm, setIntakeForm] = useState(emptyIntake);
+  const [intakeHistory, setIntakeHistory] = useState([]);
   const [soapForm, setSoapForm] = useState(emptySoap);
   const [soapNotes, setSoapNotes] = useState([]);
   const [activeTab, setActiveTab] = useState("client");
@@ -122,6 +118,7 @@ export default function App() {
     setClientForm(client);
     setActiveTab("client");
     await fetchIntake(client.id);
+    await fetchIntakeHistory(client.id);
     await fetchSoapNotes(client.id);
   }
 
@@ -144,9 +141,20 @@ export default function App() {
     });
   }
 
+  async function fetchIntakeHistory(clientId) {
+    const { data, error } = await supabase
+      .from("intake_forms")
+      .select("*")
+      .eq("client_id", clientId)
+      .order("created_at", { ascending: false });
+
+    if (error) return alert(error.message);
+    setIntakeHistory(data || []);
+  }
+
   async function fetchSoapNotes(clientId) {
     const { data, error } = await supabase
-      .from("treatment_sessions")
+      .from("soap_notes")
       .select("*")
       .eq("client_id", clientId)
       .order("created_at", { ascending: false });
@@ -249,93 +257,16 @@ export default function App() {
       client_id: selectedClient.id,
     };
 
-    // Do not send empty id back to Supabase when creating/updating.
+    // Important:
+    // Intake is now saved as history. Every Save Intake creates a new record,
+    // so old intake records can be viewed after refresh and will not be overwritten.
     delete updatedIntake.id;
     delete updatedIntake.created_at;
     delete updatedIntake.updated_at;
 
-    let result;
-
-    if (intakeForm.id) {
-      result = await supabase
-        .from("intake_forms")
-        .update(updatedIntake)
-        .eq("id", intakeForm.id)
-        .select()
-        .limit(1);
-    } else {
-      // Before inserting, check whether this client already has an intake form.
-      // This prevents duplicate intake rows and avoids future "multiple rows returned" errors.
-      const existing = await supabase
-        .from("intake_forms")
-        .select("id")
-        .eq("client_id", selectedClient.id)
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (existing.error) {
-        setLoading(false);
-        return alert(existing.error.message);
-      }
-
-      if (existing.data && existing.data.length > 0) {
-        result = await supabase
-          .from("intake_forms")
-          .update(updatedIntake)
-          .eq("id", existing.data[0].id)
-          .select()
-          .limit(1);
-      } else {
-        result = await supabase
-          .from("intake_forms")
-          .insert([updatedIntake])
-          .select()
-          .limit(1);
-      }
-    }
-
-    setLoading(false);
-
-    if (result.error) return alert(result.error.message);
-
-    await fetchIntake(selectedClient.id);
-    alert("Intake form saved.");
-  }
-
-  async function saveSoapNote() {
-    if (!selectedClient) return alert("Please select a client first.");
-
-    const hasSessionContent =
-      soapForm.subjective ||
-      soapForm.objective ||
-      soapForm.assessment ||
-      soapForm.plan ||
-      soapForm.therapist_notes ||
-      soapForm.pain_scale ||
-      soapForm.movement_restrictions ||
-      soapForm.treatment_methods ||
-      soapForm.follow_up;
-
-    if (!hasSessionContent) {
-      return alert("Please enter treatment session details before saving.");
-    }
-
-    setLoading(true);
-
-    const sessionData = {
-      ...soapForm,
-      treatment_date:
-        soapForm.treatment_date || new Date().toISOString().slice(0, 10),
-      client_id: selectedClient.id,
-    };
-
-    delete sessionData.id;
-    delete sessionData.created_at;
-    delete sessionData.updated_at;
-
     const { data, error } = await supabase
-      .from("treatment_sessions")
-      .insert([sessionData])
+      .from("intake_forms")
+      .insert([updatedIntake])
       .select()
       .limit(1);
 
@@ -344,18 +275,65 @@ export default function App() {
     if (error) return alert(error.message);
 
     if (!data || data.length === 0) {
-      return alert("Treatment session may not have saved. Please check Supabase.");
+      return alert("Intake form may not have saved. Please check Supabase.");
+    }
+
+    await fetchIntake(selectedClient.id);
+    await fetchIntakeHistory(selectedClient.id);
+    alert("Intake form saved to history.");
+  }
+
+  async function saveSoapNote() {
+    if (!selectedClient) return alert("Please select a client first.");
+
+    const hasSoapContent =
+      soapForm.subjective ||
+      soapForm.objective ||
+      soapForm.assessment ||
+      soapForm.plan ||
+      soapForm.therapist_notes;
+
+    if (!hasSoapContent) {
+      return alert("Please enter SOAP note details before saving.");
+    }
+
+    setLoading(true);
+
+    const soapData = {
+      ...soapForm,
+      treatment_date:
+        soapForm.treatment_date || new Date().toISOString().slice(0, 10),
+      client_id: selectedClient.id,
+    };
+
+    // Do not send any accidental id/timestamp fields when inserting a new note.
+    delete soapData.id;
+    delete soapData.created_at;
+    delete soapData.updated_at;
+
+    const { data, error } = await supabase
+      .from("soap_notes")
+      .insert([soapData])
+      .select()
+      .limit(1);
+
+    setLoading(false);
+
+    if (error) return alert(error.message);
+
+    if (!data || data.length === 0) {
+      return alert("SOAP note may not have saved. Please check Supabase.");
     }
 
     setSoapForm(emptySoap);
     await fetchSoapNotes(selectedClient.id);
-    alert("Treatment session saved.");
+    alert("SOAP note saved.");
   }
 
   async function deleteSoapNote(id) {
-    if (!window.confirm("Delete this treatment session?")) return;
+    if (!window.confirm("Delete this SOAP note?")) return;
 
-    const { error } = await supabase.from("treatment_sessions").delete().eq("id", id);
+    const { error } = await supabase.from("soap_notes").delete().eq("id", id);
     if (error) return alert(error.message);
 
     await fetchSoapNotes(selectedClient.id);
@@ -363,6 +341,17 @@ export default function App() {
 
   function safeText(value) {
     return value || "Not recorded";
+  }
+
+  function loadIntakeFromHistory(record) {
+    setIntakeForm({
+      ...emptyIntake,
+      ...(record || {}),
+    });
+    setTimeout(() => {
+      restoreSignatureCanvas();
+      restoreBodyChartCanvas();
+    }, 100);
   }
 
   function cleanFileName(value) {
@@ -651,19 +640,14 @@ export default function App() {
 
     const soapHistoryHtml =
       soapNotes.length === 0
-        ? `<p>No treatment sessions recorded.</p>`
+        ? `<p>No SOAP notes recorded.</p>`
         : soapNotes
             .map(
               (note, index) => `
                 <div class="soapBlock">
-                  <h3>Treatment Session ${soapNotes.length - index}</h3>
+                  <h3>SOAP Note ${soapNotes.length - index}</h3>
                   <p><b>Treatment Date:</b> ${safeText(note.treatment_date)}</p>
                   <p><b>Therapist:</b> ${safeText(note.therapist_name)}</p>
-                  <p><b>Pain Scale:</b> ${safeText(note.pain_scale)}</p>
-                  <p><b>Treatment Methods:</b> ${safeText(note.treatment_methods)}</p>
-
-                  <div class="label">Movement Restrictions</div>
-                  <div class="box">${safeText(note.movement_restrictions)}</div>
 
                   <div class="label">S - Subjective</div>
                   <div class="box">${safeText(note.subjective)}</div>
@@ -677,14 +661,8 @@ export default function App() {
                   <div class="label">P - Plan</div>
                   <div class="box">${safeText(note.plan)}</div>
 
-                  <div class="label">Follow Up</div>
-                  <div class="box">${safeText(note.follow_up)}</div>
-
                   <div class="label">Therapist Notes</div>
                   <div class="box">${safeText(note.therapist_notes)}</div>
-
-                  <div class="label">Session Photos / Links</div>
-                  <div class="box">${safeText(note.session_photos)}</div>
                 </div>
               `
             )
@@ -755,7 +733,7 @@ export default function App() {
               : ""
           }
 
-          <h2>Treatment Sessions History</h2>
+          <h2>SOAP Notes History</h2>
           ${soapHistoryHtml}
 
           <div class="footer">
@@ -772,6 +750,7 @@ export default function App() {
     setSelectedClient(null);
     setClientForm(emptyClient);
     setIntakeForm(emptyIntake);
+    setIntakeHistory([]);
     setSoapForm(emptySoap);
     setSoapNotes([]);
     setActiveTab("client");
@@ -854,7 +833,7 @@ export default function App() {
             className={activeTab === "soap" ? "tab active" : "tab"}
             onClick={() => setActiveTab("soap")}
           >
-            Treatment Sessions
+            SOAP Notes
           </button>
         </div>
 
@@ -1142,6 +1121,54 @@ export default function App() {
               </button>
             </div>
 
+            <div className="historyTitle">
+              <h3>Previous Intake Records</h3>
+            </div>
+
+            <div className="soapHistory">
+              {intakeHistory.length === 0 && (
+                <p className="warning">No previous intake records found.</p>
+              )}
+
+              {intakeHistory.map((record, index) => (
+                <div className="soapItem" key={record.id || index}>
+                  <div className="soapTop">
+                    <div>
+                      <strong>
+                        {record.created_at
+                          ? new Date(record.created_at).toLocaleDateString()
+                          : "No date"}
+                      </strong>
+                      <span>
+                        {index === 0 ? "Latest intake record" : "Previous intake record"}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => loadIntakeFromHistory(record)}
+                    >
+                      Load
+                    </button>
+                  </div>
+
+                  <p>
+                    <b>Main Concern:</b> {record.main_concern || "Not recorded"}
+                  </p>
+                  <p>
+                    <b>Pain Area:</b> {record.pain_area || "Not recorded"}
+                  </p>
+                  <p>
+                    <b>Pain Level:</b> {record.pain_level || "Not recorded"}
+                  </p>
+                  <p>
+                    <b>Risk Alerts:</b> {record.risk_alerts || "Not recorded"}
+                  </p>
+                </div>
+              ))}
+            </div>
+
             <div className="actions">
               <button onClick={saveIntake}>Save Intake</button>
 
@@ -1161,8 +1188,8 @@ export default function App() {
         {activeTab === "soap" && (
           <section className="card">
             <div className="cardTitle">
-              <h2>Treatment Sessions</h2>
-              <p>Record each treatment session and keep full session history.</p>
+              <h2>SOAP Notes</h2>
+              <p>Record treatment notes and download printable PDFs.</p>
             </div>
 
             {!selectedClient && (
@@ -1196,38 +1223,6 @@ export default function App() {
                 </select>
               </label>
             </div>
-
-            <div className="grid">
-              <label>
-                Pain Scale /10
-                <input
-                  name="pain_scale"
-                  value={soapForm.pain_scale || ""}
-                  onChange={handleSoapChange}
-                  placeholder="Example: 7/10 before treatment"
-                />
-              </label>
-
-              <label>
-                Treatment Methods
-                <input
-                  name="treatment_methods"
-                  value={soapForm.treatment_methods || ""}
-                  onChange={handleSoapChange}
-                  placeholder="Example: Dry needling, red light, deep tissue"
-                />
-              </label>
-            </div>
-
-            <label>
-              Movement Restrictions
-              <textarea
-                name="movement_restrictions"
-                value={soapForm.movement_restrictions || ""}
-                onChange={handleSoapChange}
-                placeholder="Example: walking, bending, lifting leg, prolonged standing..."
-              />
-            </label>
 
             <div className="therapistBox">
               <div className="therapistHeader">
@@ -1303,16 +1298,6 @@ export default function App() {
             </label>
 
             <label>
-              Follow Up / Home Care
-              <textarea
-                name="follow_up"
-                value={soapForm.follow_up || ""}
-                onChange={handleSoapChange}
-                placeholder="Example: stretch calves daily, foam roll, review in 1 week..."
-              />
-            </label>
-
-            <label>
               Therapist Notes
               <textarea
                 name="therapist_notes"
@@ -1321,18 +1306,8 @@ export default function App() {
               />
             </label>
 
-            <label>
-              Session Photos / File Links
-              <textarea
-                name="session_photos"
-                value={soapForm.session_photos || ""}
-                onChange={handleSoapChange}
-                placeholder="Optional: paste Google Drive photo/file links here"
-              />
-            </label>
-
             <div className="actions">
-              <button onClick={saveSoapNote}>Save Treatment Session</button>
+              <button onClick={saveSoapNote}>Save SOAP Note</button>
 
               <button
                 type="button"
@@ -1352,7 +1327,7 @@ export default function App() {
             </div>
 
             <div className="historyTitle">
-              <h3>Previous Treatment Sessions</h3>
+              <h3>Previous SOAP Notes</h3>
             </div>
 
             <div className="soapHistory">
@@ -1374,24 +1349,6 @@ export default function App() {
                     </button>
                   </div>
 
-                  {note.pain_scale && (
-                    <p>
-                      <b>Pain Scale:</b> {note.pain_scale}
-                    </p>
-                  )}
-
-                  {note.treatment_methods && (
-                    <p>
-                      <b>Treatment Methods:</b> {note.treatment_methods}
-                    </p>
-                  )}
-
-                  {note.movement_restrictions && (
-                    <p>
-                      <b>Movement Restrictions:</b> {note.movement_restrictions}
-                    </p>
-                  )}
-
                   <p>
                     <b>S:</b> {note.subjective}
                   </p>
@@ -1405,21 +1362,9 @@ export default function App() {
                     <b>P:</b> {note.plan}
                   </p>
 
-                  {note.follow_up && (
-                    <p>
-                      <b>Follow Up:</b> {note.follow_up}
-                    </p>
-                  )}
-
                   {note.therapist_notes && (
                     <p>
                       <b>Therapist Notes:</b> {note.therapist_notes}
-                    </p>
-                  )}
-
-                  {note.session_photos && (
-                    <p>
-                      <b>Session Photos / Links:</b> {note.session_photos}
                     </p>
                   )}
                 </div>
