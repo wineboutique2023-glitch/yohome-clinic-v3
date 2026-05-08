@@ -121,17 +121,21 @@ export default function App() {
   }
 
   async function fetchIntake(clientId) {
+    // Safe version:
+    // Supabase .single() / .maybeSingle() will break if the same client accidentally has
+    // more than one intake record. This always takes the latest one instead.
     const { data, error } = await supabase
       .from("intake_forms")
       .select("*")
       .eq("client_id", clientId)
-      .maybeSingle();
+      .order("created_at", { ascending: false })
+      .limit(1);
 
     if (error) return alert(error.message);
 
     setIntakeForm({
       ...emptyIntake,
-      ...(data || {}),
+      ...(data && data.length > 0 ? data[0] : {}),
     });
   }
 
@@ -227,6 +231,8 @@ export default function App() {
   async function saveIntake() {
     if (!selectedClient) return alert("Please select a client first.");
 
+    setLoading(true);
+
     const updatedIntake = {
       ...intakeForm,
       signature_image: signatureRef.current
@@ -238,20 +244,52 @@ export default function App() {
       client_id: selectedClient.id,
     };
 
+    // Do not send empty id back to Supabase when creating/updating.
+    delete updatedIntake.id;
+    delete updatedIntake.created_at;
+    delete updatedIntake.updated_at;
+
     let result;
 
     if (intakeForm.id) {
       result = await supabase
         .from("intake_forms")
         .update(updatedIntake)
-        .eq("id", intakeForm.id);
-    } else {
-      result = await supabase
-        .from("intake_forms")
-        .insert([updatedIntake])
+        .eq("id", intakeForm.id)
         .select()
-        .single();
+        .limit(1);
+    } else {
+      // Before inserting, check whether this client already has an intake form.
+      // This prevents duplicate intake rows and avoids future "multiple rows returned" errors.
+      const existing = await supabase
+        .from("intake_forms")
+        .select("id")
+        .eq("client_id", selectedClient.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (existing.error) {
+        setLoading(false);
+        return alert(existing.error.message);
+      }
+
+      if (existing.data && existing.data.length > 0) {
+        result = await supabase
+          .from("intake_forms")
+          .update(updatedIntake)
+          .eq("id", existing.data[0].id)
+          .select()
+          .limit(1);
+      } else {
+        result = await supabase
+          .from("intake_forms")
+          .insert([updatedIntake])
+          .select()
+          .limit(1);
+      }
     }
+
+    setLoading(false);
 
     if (result.error) return alert(result.error.message);
 
@@ -262,13 +300,44 @@ export default function App() {
   async function saveSoapNote() {
     if (!selectedClient) return alert("Please select a client first.");
 
+    const hasSoapContent =
+      soapForm.subjective ||
+      soapForm.objective ||
+      soapForm.assessment ||
+      soapForm.plan ||
+      soapForm.therapist_notes;
+
+    if (!hasSoapContent) {
+      return alert("Please enter SOAP note details before saving.");
+    }
+
+    setLoading(true);
+
     const soapData = {
       ...soapForm,
+      treatment_date:
+        soapForm.treatment_date || new Date().toISOString().slice(0, 10),
       client_id: selectedClient.id,
     };
 
-    const { error } = await supabase.from("soap_notes").insert([soapData]);
+    // Do not send any accidental id/timestamp fields when inserting a new note.
+    delete soapData.id;
+    delete soapData.created_at;
+    delete soapData.updated_at;
+
+    const { data, error } = await supabase
+      .from("soap_notes")
+      .insert([soapData])
+      .select()
+      .limit(1);
+
+    setLoading(false);
+
     if (error) return alert(error.message);
+
+    if (!data || data.length === 0) {
+      return alert("SOAP note may not have saved. Please check Supabase.");
+    }
 
     setSoapForm(emptySoap);
     await fetchSoapNotes(selectedClient.id);
