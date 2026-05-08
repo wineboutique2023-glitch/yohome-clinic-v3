@@ -357,6 +357,22 @@ export default function App() {
     return value || "Not recorded";
   }
 
+  function cleanFileName(value) {
+    return String(value || "")
+      .trim()
+      .replace(/[^a-zA-Z0-9\-_ ]/g, "")
+      .replace(/\s+/g, "_")
+      .replace(/_+/g, "_");
+  }
+
+  function getClientFileName(label) {
+    const today = new Date().toISOString().slice(0, 10);
+    const firstName = selectedClient?.first_name || "Client";
+    const lastName = selectedClient?.last_name || "";
+    const clientName = cleanFileName(`${firstName} ${lastName}`) || "Client";
+    return `YOHOME_${clientName}_${today}_${label}`;
+  }
+
   function getCanvasPoint(canvas, event) {
     const rect = canvas.getBoundingClientRect();
     const clientX = event.touches ? event.touches[0].clientX : event.clientX;
@@ -570,10 +586,12 @@ export default function App() {
       selectedClient.last_name || ""
     }`;
 
+    const fileName = getClientFileName("SOAP_Note");
+
     openPdfWindow(`
       <html>
         <head>
-          <title>YOHOME SOAP Note</title>
+          <title>${fileName}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 40px; color: #09223f; line-height: 1.6; }
             h1 { color: #0f3d5e; margin-bottom: 4px; }
@@ -653,10 +671,12 @@ export default function App() {
             )
             .join("");
 
+    const fileName = getClientFileName("Full_Client_Report");
+
     openPdfWindow(`
       <html>
         <head>
-          <title>YOHOME Full Client Report</title>
+          <title>${fileName}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 38px; color: #09223f; line-height: 1.55; }
             h1 { color: #0f3d5e; margin-bottom: 4px; font-size: 28px; }
