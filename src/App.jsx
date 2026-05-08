@@ -8,7 +8,7 @@ const emptyClient = {
   phone: "",
   email: "",
   date_of_birth: "",
-  address: "",
+  suburb_area: "",
   emergency_contact: "",
   notes: "",
 };
@@ -702,7 +702,7 @@ export default function App() {
             <p><b>Phone:</b> ${safeText(selectedClient.phone)}</p>
             <p><b>Email:</b> ${safeText(selectedClient.email)}</p>
             <p><b>Date of Birth:</b> ${safeText(selectedClient.date_of_birth)}</p>
-            <p><b>Address:</b> ${safeText(selectedClient.address)}</p>
+            <p><b>Area / Suburb:</b> ${safeText(selectedClient.suburb_area)}</p>
             <p><b>Emergency Contact:</b> ${safeText(selectedClient.emergency_contact)}</p>
           </div>
 
@@ -892,11 +892,12 @@ export default function App() {
               </label>
 
               <label>
-                Address
+                Area / Suburb
                 <input
-                  name="address"
-                  value={clientForm.address || ""}
+                  name="suburb_area"
+                  value={clientForm.suburb_area || ""}
                   onChange={handleClientChange}
+                  placeholder="Example: Abbotsford, Richmond, Glen Iris"
                 />
               </label>
             </div>
