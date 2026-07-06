@@ -626,9 +626,14 @@ export default function App() {
   function downloadFullReportPdf() {
     if (!selectedClient) return alert("Please select a client first.");
 
-    const latestSignature = signatureRef.current
-      ? signatureRef.current.toDataURL("image/png")
-      : intakeForm.signature_image;
+    const latestSignature =
+  intakeForm.signature_image &&
+  intakeForm.signature_image.length > 100
+    ? intakeForm.signature_image
+    : (
+        signatureRef.current &&
+        signatureRef.current.toDataURL("image/png")
+      );
 
     const latestBodyChart = bodyChartRef.current
       ? bodyChartRef.current.toDataURL("image/png")
