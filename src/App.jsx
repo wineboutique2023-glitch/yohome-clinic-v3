@@ -448,9 +448,22 @@ export default function App() {
     img.src = intakeForm.signature_image;
   }
 
-  function drawBodyTemplate() {
-    const canvas = bodyChartRef.current;
-    if (!canvas) return;
+ function drawBodyTemplate() {
+  const canvas = bodyChartRef.current;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const img = new Image();
+
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  };
+
+  img.src = "/body-chart.png";
+}
 
     const ctx = canvas.getContext("2d");
 
