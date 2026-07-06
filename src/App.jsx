@@ -635,9 +635,14 @@ export default function App() {
         signatureRef.current.toDataURL("image/png")
       );
 
-    const latestBodyChart = bodyChartRef.current
-      ? bodyChartRef.current.toDataURL("image/png")
-      : intakeForm.body_chart_image;
+    const latestBodyChart =
+  intakeForm.body_chart_image &&
+  intakeForm.body_chart_image.length > 100
+    ? intakeForm.body_chart_image
+    : (
+        bodyChartRef.current &&
+        bodyChartRef.current.toDataURL("image/png")
+      );
 
     const clientName = `${selectedClient.first_name || ""} ${
       selectedClient.last_name || ""
