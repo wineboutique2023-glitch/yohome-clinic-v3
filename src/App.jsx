@@ -43,6 +43,7 @@ const emptySoap = {
 export default function App() {
   const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
+  const [showClientList, setShowClientList] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientForm, setClientForm] = useState(emptyClient);
   const [intakeForm, setIntakeForm] = useState(emptyIntake);
@@ -116,6 +117,7 @@ export default function App() {
   async function selectClient(client) {
     setSelectedClient(client);
     setClientForm(client);
+    setShowClientList(false);
     setActiveTab("client");
     await fetchIntake(client.id);
     await fetchIntakeHistory(client.id);
@@ -737,23 +739,42 @@ export default function App() {
           + New Client
         </button>
 
-        <div className="clientList">
-          {filteredClients.map((client) => (
-            <button
-              key={client.id}
-              className={
-                selectedClient?.id === client.id
-                  ? "clientItem active"
-                  : "clientItem"
-              }
-              onClick={() => selectClient(client)}
-            >
-              <strong>
-                {client.first_name} {client.last_name}
-              </strong>
-            </button>
-          ))}
-        </div>
+        <button
+          type="button"
+          className="toggleClientsBtn"
+          onClick={() => setShowClientList((prev) => !prev)}
+        >
+          {showClientList ? "Hide Client List" : "Show Client List"}
+        </button>
+
+        {selectedClient && !showClientList && (
+          <div className="selectedClientMini">
+            <span>Selected Client</span>
+            <strong>
+              {selectedClient.first_name} {selectedClient.last_name}
+            </strong>
+          </div>
+        )}
+
+        {showClientList && (
+          <div className="clientList">
+            {filteredClients.map((client) => (
+              <button
+                key={client.id}
+                className={
+                  selectedClient?.id === client.id
+                    ? "clientItem active"
+                    : "clientItem"
+                }
+                onClick={() => selectClient(client)}
+              >
+                <strong>
+                  {client.first_name} {client.last_name}
+                </strong>
+              </button>
+            ))}
+          </div>
+        )}
       </aside>
 
       <main className="main">
